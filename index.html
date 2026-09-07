@@ -253,11 +253,7 @@
       const status = document.getElementById("status");
 
       try {
-        const response = await fetch(API_URL);
-        if (!response.ok) {
-          throw new Error("データ取得に失敗しました");
-        }
-        const data = await response.json();
+        const data = await loadEventsJsonp(API_URL);
         status.textContent = `${data.length}件の予定`;
         const calendarEl = document.getElementById("calendar");
         const calendar = new FullCalendar.Calendar(calendarEl, {
