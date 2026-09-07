@@ -10,6 +10,11 @@
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/all/global.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/locales/ja.global.js"></script>
 
+  <link
+    href="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/skeleton.css"
+    rel="stylesheet"
+  />
+  
   <style>
     * {
       box-sizing: border-box;
@@ -338,12 +343,12 @@
       resolve(data);
     };
 
-    script.onerror = function() {
-      console.error("JSONP scriptの読み込みエラー:", event);
-      console.error("読み込み先URL:", script.src);
-      cleanup();
-      reject(new Error("Apps Scriptへの接続に失敗しました"));
-    };
+  script.onerror = function(event) {
+    console.error("JSONP scriptの読み込みエラー:", event);
+    console.error("読み込み先URL:", script.src);
+    cleanup();
+    reject(new Error("Apps Scriptへの接続に失敗しました"));
+  };
 
     script.src =
       url +
