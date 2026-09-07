@@ -1,1 +1,476 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>彩原カレンダー</title>
+
+  <!-- FullCalendar -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/all/global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/locales/ja.global.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f7f8fa;
+      color: #333;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Hiragino Kaku Gothic ProN",
+        "Hiragino Sans",
+        Meiryo,
+        sans-serif;
+    }
+
+    header {
+      padding: 20px 16px 12px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    #status {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    #calendar {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 10px 30px;
+    }
+
+    /* カレンダー全体 */
+    .fc {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    }
+
+    /* イベント */
+    .fc-daygrid-event {
+      cursor: pointer;
+      border-radius: 4px;
+      padding: 2px 4px;
+    }
+
+    /* 詳細モーダル */
+    #modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.45);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      width: min(500px, 100%);
+      max-height: 85vh;
+      overflow-y: auto;
+      background: white;
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-title {
+      margin: 0 0 16px;
+      font-size: 1.3rem;
+    }
+
+    .modal-row {
+      margin-bottom: 12px;
+    }
+
+    .modal-label {
+      font-size: 0.75rem;
+      color: #888;
+      margin-bottom: 2px;
+    }
+
+    .modal-value {
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+
+    .modal-value a {
+      color: #3578c4;
+      word-break: break-all;
+    }
+
+    #modal-close {
+      display: block;
+      width: 100%;
+      margin-top: 20px;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #eee;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    /* スマホ向け */
+    @media (max-width: 600px) {
+      header {
+        padding: 14px 10px 8px;
+      }
+
+      h1 {
+        font-size: 1.2rem;
+      }
+
+      #calendar {
+        padding: 0 4px 20px;
+      }
+
+      .fc {
+        border-radius: 8px;
+      }
+
+      .fc-toolbar {
+        gap: 6px;
+      }
+
+      .fc-toolbar-title {
+        font-size: 1.1rem !important;
+      }
+
+      .fc-button {
+        padding: 5px 8px !important;
+        font-size: 0.8rem !important;
+      }
+
+      .fc-daygrid-day-number {
+        font-size: 0.8rem;
+      }
+
+      .fc-daygrid-event {
+        font-size: 0.7rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>彩原カレンダー</h1>
+    <div id="status">読み込み中……</div>
+  </header>
+
+  <main id="calendar"></main>
+
+  <!-- イベント詳細 -->
+  <div id="modal">
+    <div class="modal-content">
+
+      <h2 id="modal-title" class="modal-title"></h2>
+
+      <div class="modal-row">
+        <div class="modal-label">日付</div>
+        <div id="modal-date" class="modal-value"></div>
+      </div>
+
+      <div class="modal-row" id="modal-category-row">
+        <div class="modal-label">カテゴリ</div>
+        <div id="modal-category" class="modal-value"></div>
+      </div>
+
+      <div class="modal-row" id="modal-location-row">
+        <div class="modal-label">場所</div>
+        <div id="modal-location" class="modal-value"></div>
+      </div>
+
+      <div class="modal-row" id="modal-description-row">
+        <div class="modal-label">詳細</div>
+        <div id="modal-description" class="modal-value"></div>
+      </div>
+
+      <div class="modal-row" id="modal-url-row">
+        <div class="modal-label">関連リンク</div>
+        <div id="modal-url" class="modal-value"></div>
+      </div>
+
+      <button id="modal-close">閉じる</button>
+
+    </div>
+  </div>
+
+  <script>
+
+    /*
+     * =====================================================
+     * Apps ScriptのURL
+     * =====================================================
+     *
+
+    const API_URL = "https://script.google.com/macros/s/AKfycbxR2s2SPj3zaMNVwONro8bZrr2vJPE0JEyva9bzMb85EqmSgRwSQDZen5v_em_Np5qw/exec";
+
+    /*
+     * =====================================================
+     * カテゴリごとの色
+     * =====================================================
+     */
+
+    const CATEGORY_COLORS = {
+      "PL卓": "#33CCCC",
+      "KP卓": "#FFCC00",
+      "仮押さえ": "#6699FF"
+      "イベント": "#FF6699"
+      "×": "#7F7F7F"
+    };
+
+
+    /*
+     * =====================================================
+     * カレンダー初期化
+     * =====================================================
+     */
+
+    document.addEventListener("DOMContentLoaded", async function () {
+
+      const status = document.getElementById("status");
+
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) {
+          throw new Error("データ取得に失敗しました");
+        }
+        const data = await response.json();
+        status.textContent = `${data.length}件の予定`;
+        const calendarEl = document.getElementById("calendar");
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+          locale: "ja",
+          initialView: "dayGridMonth",
+          firstDay: 0,
+          fixedWeekCount: false,
+          showNonCurrentDates: true,
+          height: "auto",
+          dayMaxEvents: 3,
+          headerToolbar: {
+            left: "prev,next today",
+            center: "title",
+            right: ""
+          },
+
+          buttonText: {
+            today: "今日"
+          },
+
+          events: data.map(event => {
+
+            const color =
+              CATEGORY_COLORS[event.category] || "#888";
+
+            return {
+              title: event.title,
+              start: event.start,
+              end: event.end,
+              backgroundColor: color,
+              borderColor: color,
+
+              extendedProps: {
+                category: event.category,
+                location: event.location,
+                description: event.description,
+                url: event.url
+              }
+            };
+
+          }),
+
+          eventClick: function(info) {
+            openModal(info.event);
+          }
+
+        });
+
+        calendar.render();
+
+      } catch (error) {
+        console.error(error);
+        status.textContent =
+          "カレンダーの読み込みに失敗しました。";
+      }
+    });
+
+
+    /*
+     * =====================================================
+     * モーダル表示
+     * =====================================================
+     */
+
+    function openModal(event) {
+
+      const props = event.extendedProps;
+
+      document.getElementById("modal-title").textContent =
+        event.title;
+
+      /*
+       * FullCalendarのendは「終了日の翌日」なので、
+       * 表示時には1日戻します。
+       */
+
+      const startDate = formatJapaneseDate(event.start);
+
+      let dateText = startDate;
+
+      if (event.end) {
+
+        const endDate = new Date(event.end);
+        endDate.setDate(endDate.getDate() - 1);
+
+        const formattedEnd =
+          formatJapaneseDate(endDate);
+
+        if (startDate !== formattedEnd) {
+          dateText += " ～ " + formattedEnd;
+        }
+
+      }
+
+      document.getElementById("modal-date").textContent =
+        dateText;
+
+
+      setModalRow(
+        "modal-category-row",
+        "modal-category",
+        props.category
+      );
+
+      setModalRow(
+        "modal-location-row",
+        "modal-location",
+        props.location
+      );
+
+      setModalRow(
+        "modal-description-row",
+        "modal-description",
+        props.description
+      );
+
+
+      const urlRow = document.getElementById("modal-url-row");
+      const urlElement = document.getElementById("modal-url");
+
+      if (props.url) {
+        urlRow.style.display = "";
+        urlElement.innerHTML = "";
+
+        const link = document.createElement("a");
+
+        link.href = props.url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "リンクを開く";
+
+        urlElement.appendChild(link);
+
+      } else {
+
+        urlRow.style.display = "none";
+
+      }
+
+
+      document.getElementById("modal").classList.add("active");
+
+    }
+
+
+    function setModalRow(rowId, valueId, value) {
+
+      const row = document.getElementById(rowId);
+      const element = document.getElementById(valueId);
+
+      if (value) {
+
+        row.style.display = "";
+        element.textContent = value;
+
+      } else {
+
+        row.style.display = "none";
+
+      }
+
+    }
+
+
+    function formatJapaneseDate(date) {
+
+      return date.toLocaleDateString(
+        "ja-JP",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          weekday: "short"
+        }
+      );
+
+    }
+
+
+    /*
+     * =====================================================
+     * モーダルを閉じる
+     * =====================================================
+     */
+
+    document
+      .getElementById("modal-close")
+      .addEventListener("click", function () {
+
+        document
+          .getElementById("modal")
+          .classList.remove("active");
+
+      });
+
+
+    /*
+     * 背景クリックでも閉じる
+     */
+
+    document
+      .getElementById("modal")
+      .addEventListener("click", function (event) {
+
+        if (event.target === this) {
+
+          this.classList.remove("active");
+
+        }
+
+      });
+
+  </script>
+
+</body>
+</html>
