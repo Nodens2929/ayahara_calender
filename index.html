@@ -7,23 +7,23 @@
   <title>彩原カレンダー</title>
 
   <!-- FullCalendar -->
-<!-- FullCalendar -->
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/all/global.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/themes/classic/global.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/locales/ja.global.js"></script>
+  <!-- FullCalendar -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/all/global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/themes/classic/global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/locales/ja.global.js"></script>
 
-<link
-  href="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/skeleton.css"
-  rel="stylesheet"
-/>
-<link
-  href="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/themes/classic/theme.css"
-  rel="stylesheet"
-/>
-<link
-  href="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/themes/classic/palette.css"
-  rel="stylesheet"
-/>
+  <link
+    href="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/skeleton.css"
+    rel="stylesheet" 
+  />
+  <link
+    href="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/themes/classic/theme.css"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/themes/classic/palette.css"
+    rel="stylesheet"
+  />
   
   <style>
     * {
@@ -250,7 +250,7 @@
 
     const CATEGORY_COLORS = {
       "PL卓": "#33CCCC",
-      "KP卓": "#FFCC00",
+      "KP卓": "#FF9900",
       "仮押さえ": "#6699FF",
       "イベント": "#FF6699",
       "×": "#7F7F7F"
@@ -290,26 +290,25 @@
           },
 
           events: data.map(event => {
-
             const color =
-              CATEGORY_COLORS[event.category] || "#888";
+            CATEGORY_COLORS[event.category] || "#888";
 
-            return {
-              title: event.title,
-              start: event.start,
-              end: event.end,
-              backgroundColor: color,
-              borderColor: color,
+          return {
+            title: event.title,
+            start: event.start,
+            end: event.end,
 
-              extendedProps: {
-                category: event.category,
-                location: event.location,
-                description: event.description,
-                url: event.url
-              }
-            };
+            // FullCalendar v7では color を使用
+            color: color,
 
-          }),
+            extendedProps: {
+              category: event.category,
+              location: event.location,
+              description: event.description,
+              url: event.url
+            } 
+          };
+        }),
 
           eventClick: function(info) {
             openModal(info.event);
