@@ -339,6 +339,8 @@
     };
 
     script.onerror = function() {
+      console.error("JSONP scriptの読み込みエラー:", event);
+      console.error("読み込み先URL:", script.src);
       cleanup();
       reject(new Error("Apps Scriptへの接続に失敗しました"));
     };
